@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f5f0e8;--bg2:#fffdf7;--bg3:#f0ebe0;
+  --accent:#e8a020;--accent2:#c47800;
+  --blue:#3a7bd5;--blue2:#1a5ab5;
+  --green:#2e9e5b;--red:#d04040;--purple:#7b5ea7;
+  --text:#2c2416;--muted:#8a7a60;
+  --border:#d8cdb8;--border2:#c8bda8;
+  --font:'Nunito',sans-serif;--font-tc:'Noto Sans TC',sans-serif;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font-tc);min-height:100vh}
+#app{max-width:860px;margin:0 auto;padding:20px 16px}
+
+.header{background:var(--blue);color:#fff;padding:20px 24px;border-radius:16px;margin-bottom:20px;position:relative;overflow:hidden}
+.header::before{content:'🔍';position:absolute;right:20px;top:50%;transform:translateY(-50%);font-size:64px;opacity:.15}
+.case-label{font-size:11px;letter-spacing:2px;opacity:.8;margin-bottom:6px;font-family:var(--font);font-weight:700;text-transform:uppercase}
+.case-title{font-size:26px;font-weight:800;font-family:var(--font);line-height:1.2;margin-bottom:6px}
+.case-sub{font-size:13px;opacity:.85;line-height:1.6}
+.badge-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;font-family:var(--font)}
+.badge-orange{background:#ff9900;color:#fff}
+.badge-red{background:#d04040;color:#fff}
+
+.progress-section{background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:16px}
+.progress-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.progress-title{font-size:13px;font-weight:700}
+.progress-count{font-size:13px;font-weight:700;color:var(--blue)}
+.progress-bar{height:8px;background:var(--bg3);border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--blue),#5b9ff5);border-radius:4px;transition:width .5s}
+.clue-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{font-size:11px;padding:3px 10px;border-radius:20px;background:#fff8e0;border:1.5px solid var(--accent);color:var(--accent2);font-weight:600}
+
+.tabs{display:flex;gap:4px;border-bottom:2px solid var(--border);flex-wrap:wrap}
+.tab{padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer;border-radius:10px 10px 0 0;color:var(--muted);background:var(--bg3);border:1.5px solid transparent;border-bottom:none;transition:.15s;font-family:var(--font)}
+.tab.active{background:var(--bg2);color:var(--blue2);border-color:var(--border);margin-bottom:-2px;border-bottom-color:var(--bg2)}
+.tab-content{display:none;background:var(--bg2);border:1.5px solid var(--border);border-top:none;border-radius:0 0 14px 14px;padding:20px}
+.tab-content.active{display:block}
+
+.section-label{font-size:11px;font-weight:800;color:var(--blue2);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.story-box{background:var(--bg3);border-radius:10px;padding:14px 16px;font-size:14px;line-height:2;color:var(--text);border-left:4px solid var(--blue);margin-bottom:16px}
+
+/* 謎題鎖 */
+.puzzle-lock{background:#fff8e0;border:2px dashed var(--accent);border-radius:12px;padding:14px 16px;margin-bottom:14px;position:relative}
+.puzzle-lock.unlocked{background:#e8faf0;border:2px solid var(--green)}
+.puzzle-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.puzzle-icon{font-size:22px}
+.puzzle-title{font-size:14px;font-weight:800;color:var(--accent2)}
+.puzzle-lock.unlocked .puzzle-title{color:var(--green)}
+.puzzle-q{font-size:13px;color:var(--text);line-height:1.8;margin-bottom:10px;background:var(--bg2);padding:10px 12px;border-radius:8px;border-left:3px solid var(--accent)}
+.puzzle-lock.unlocked .puzzle-q{display:none}
+.puzzle-input-row{display:flex;gap:8px}
+.puzzle-input{flex:1;background:#fff;border:1.5px solid var(--border2);border-radius:8px;font-family:var(--font-tc);font-size:13px;padding:8px 12px;outline:none;transition:.2s}
+.puzzle-input:focus{border-color:var(--accent)}
+.puzzle-btn{font-family:var(--font);font-size:12px;font-weight:700;padding:8px 16px;background:var(--accent);border:none;color:#fff;cursor:pointer;border-radius:8px;white-space:nowrap}
+.puzzle-btn:hover{background:var(--accent2)}
+.puzzle-lock.unlocked .puzzle-input-row{display:none}
+.puzzle-result{font-size:13px;display:none;margin-top:10px;padding:10px 12px;border-radius:8px;line-height:1.8}
+.puzzle-result.wrong{background:#fff0f0;color:var(--red);border:1px solid #f5c0c0;display:block}
+.puzzle-result.correct{background:#e8faf0;color:var(--green);border:1px solid #a0ddb8;display:block}
+.puzzle-hint-btn{font-size:11px;color:var(--muted);cursor:pointer;margin-top:6px;display:inline-block;text-decoration:underline}
+.puzzle-hint{font-size:12px;color:var(--purple);background:#f0eaff;padding:6px 10px;border-radius:6px;margin-top:6px;display:none;line-height:1.7}
+.unlocked-content{display:none;font-size:13px;line-height:1.9;color:var(--text)}
+.puzzle-lock.unlocked .unlocked-content{display:block}
+.unlocked-badge{display:inline-block;font-size:11px;font-weight:700;background:var(--green);color:#fff;padding:2px 10px;border-radius:20px;margin-bottom:8px}
+
+/* 嫌疑人 */
+.suspects-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.sus-card{background:var(--bg3);border:2px solid var(--border);border-radius:14px;padding:14px;cursor:pointer;transition:.2s;text-align:center}
+.sus-card:hover{border-color:var(--blue)}
+.sus-card.selected{border-color:var(--blue2);background:#ddeeff}
+.sus-avatar{font-size:36px;margin-bottom:8px}
+.sus-name{font-size:15px;font-weight:800;font-family:var(--font);margin-bottom:4px}
+.sus-role{font-size:11px;color:var(--muted);font-weight:600;margin-bottom:8px}
+.sus-desc{font-size:12px;line-height:1.7;text-align:left}
+.sus-motive{font-size:11px;color:var(--purple);font-weight:700;margin-top:6px;background:#f0eaff;padding:4px 8px;border-radius:6px;text-align:left}
+
+/* 物證 */
+.ev-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ev-card{background:var(--bg3);border:1.5px solid var(--border2);border-radius:10px;padding:12px;cursor:pointer;transition:.2s}
+.ev-card:hover{border-color:var(--blue);background:#eef4ff}
+.ev-card.locked{opacity:.45;cursor:not-allowed}
+.ev-card.locked:hover{border-color:var(--border2);background:var(--bg3)}
+.ev-card.just-unlocked{border-color:var(--green);background:#e8faf0}
+.ev-icon2{font-size:24px;margin-bottom:6px}
+.ev-title{font-size:13px;font-weight:700;margin-bottom:4px}
+.ev-desc2{font-size:12px;color:var(--muted);line-height:1.6}
+.lock-hint{font-size:11px;color:var(--accent2);margin-top:4px;font-weight:600}
+
+/* 調查 */
+.search-hint{background:#fff8e0;border:1.5px solid var(--accent);border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.8;margin-bottom:16px;color:var(--accent2)}
+.search-row{display:flex;gap:8px;margin-bottom:10px}
+.search-input{flex:1;background:var(--bg3);border:1.5px solid var(--border2);border-radius:8px;color:var(--text);font-family:var(--font-tc);font-size:14px;padding:9px 14px;outline:none;transition:.2s}
+.search-input:focus{border-color:var(--blue)}
+.btn{font-family:var(--font);font-size:13px;font-weight:700;padding:9px 18px;background:var(--blue);border:none;color:#fff;cursor:pointer;border-radius:8px;transition:.2s}
+.btn:hover{background:var(--blue2)}
+.btn-gray{background:var(--muted)}
+.btn-gray:hover{background:#6a5a40}
+.tried-words{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;min-height:24px}
+.tried-word{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;font-family:var(--font)}
+.tried-word.hit{background:#e8faf0;border:1.5px solid var(--green);color:var(--green)}
+.tried-word.miss{background:#f5f5f5;border:1.5px solid var(--border2);color:var(--muted);text-decoration:line-through}
+.notebook-wrap{background:#fffdf0;border:1.5px solid #e8d898;border-radius:10px;padding:14px;min-height:160px;max-height:280px;overflow-y:auto;margin-top:4px}
+.nb-entry{font-size:13px;line-height:1.85;padding:5px 0;border-bottom:1px dashed #e8d898;color:var(--text)}
+.nb-entry:last-child{border:none}
+.nb-entry.new{color:var(--blue2);font-weight:700}
+.nb-entry.miss{color:var(--muted)}
+
+/* 裁決 */
+.verdict-intro{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:16px;background:var(--bg3);border-radius:8px;padding:12px 14px;border-left:4px solid var(--accent)}
+.verdict-step{background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px}
+.vs-title{font-size:14px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.vs-num{width:26px;height:26px;background:var(--blue);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;font-family:var(--font)}
+.radio-group{display:flex;flex-direction:column;gap:8px}
+.radio-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:8px;border:1.5px solid var(--border);cursor:pointer;transition:.2s;background:var(--bg3)}
+.radio-item:hover{border-color:var(--blue);background:#eef4ff}
+.radio-item.chosen{border-color:var(--blue2);background:#ddeeff}
+.radio-item input{margin-top:2px;accent-color:var(--blue);cursor:pointer}
+.radio-label{font-size:13px;line-height:1.6}
+.ev-check-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+.ev-check-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;border:1.5px solid var(--border);cursor:pointer;transition:.2s;background:var(--bg3)}
+.ev-check-item:hover{border-color:var(--blue)}
+.ev-check-item.checked{border-color:var(--green);background:#e8faf0}
+.ev-check-item input{accent-color:var(--green);cursor:pointer}
+.ev-check-label{font-size:12px;line-height:1.5}
+
+/* 自由書寫 */
+.free-write{width:100%;min-height:90px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:8px;font-family:var(--font-tc);font-size:13px;padding:10px 12px;resize:vertical;outline:none;color:var(--text);line-height:1.8}
+.free-write:focus{border-color:var(--blue)}
+
+.verdict-warn{font-size:12px;color:var(--red);margin-top:8px;display:none}
+.submit-btn{width:100%;padding:14px;font-size:16px;font-weight:800;background:var(--green);color:#fff;border:none;border-radius:12px;cursor:pointer;font-family:var(--font);transition:.2s;margin-top:8px}
+.submit-btn:hover{background:#237a46}
+
+.result-panel{display:none;background:var(--bg2);border:2px solid var(--border);border-radius:16px;padding:24px;text-align:center;margin-top:16px}
+.result-panel.show{display:block}
+.result-icon{font-size:60px;margin-bottom:12px}
+.result-title{font-size:22px;font-weight:800;font-family:var(--font);margin-bottom:12px}
+.result-title.correct{color:var(--green)}
+.result-title.wrong{color:var(--red)}
+.result-score{font-size:15px;color:var(--blue2);font-weight:700;background:#ddeeff;padding:8px 16px;border-radius:8px;display:inline-block;margin-bottom:14px}
+.result-body{font-size:14px;line-height:1.9;text-align:left;background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:16px}
+
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.show{display:flex}
+.modal{background:var(--bg2);border:2px solid var(--border);border-radius:16px;padding:24px;max-width:460px;width:100%;max-height:85vh;overflow-y:auto}
+.modal-icon{font-size:38px;text-align:center;margin-bottom:8px}
+.modal-title{font-size:17px;font-weight:800;font-family:var(--font);margin-bottom:10px;padding-bottom:8px;border-bottom:1.5px solid var(--border)}
+.modal-body{font-size:13px;line-height:1.9}
+.modal-body p{margin-bottom:8px}
+.modal-btn{width:100%;padding:10px;font-size:14px;font-weight:700;margin-top:12px;background:var(--blue);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:var(--font)}
+.modal-btn:hover{background:var(--blue2)}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .35s ease forwards}
+@media(max-width:600px){.suspects-grid{grid-template-columns:1fr}.ev-grid{grid-template-columns:1fr}.ev-check-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="app">
+
+<div class="header fade-in">
+  <div class="case-label">🏫 陽光小學偵探社 — 案件 #005</div>
+  <div class="case-title">消失的運動會冠軍獎盃！</div>
+  <div class="case-sub">地點：陽光小學 ▸ 事件：金色冠軍獎盃不翼而飛 ▸ 發現時間：10月15日（星期五）下午3點</div>
+  <div class="badge-row">
+    <span class="badge badge-orange">謎案調查中</span>
+    <span class="badge badge-red">嫌疑人：3人</span>
+  </div>
+</div>
+
+<div class="progress-section fade-in">
+  <div class="progress-top">
+    <span class="progress-title">🔍 偵探進度</span>
+    <span class="progress-count" id="prog-count">0 / 10 線索解鎖</span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+  <div class="clue-chips" id="clue-chips"></div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('story')">📖 案件故事</div>
+  <div class="tab" onclick="switchTab('suspects')">👥 嫌疑人</div>
+  <div class="tab" onclick="switchTab('evidence')">🗂 物證</div>
+  <div class="tab" onclick="switchTab('search')">🔎 調查</div>
+  <div class="tab" onclick="switchTab('verdict')">⚖️ 裁決</div>
+</div>
+
+<!-- ===== STORY ===== -->
+<div class="tab-content active" id="tab-story">
+
+  <div class="section-label">📰 事件起因</div>
+  <div class="story-box">
+    陽光小學一年一度的運動會剛剛結束！六年甲班以總分第一名獲得了一座閃閃發亮的金色冠軍獎盃。獎盃被暫時放在學校一樓公布欄旁的展示台上，等待下週的頒獎典禮。<br><br>
+    然而，星期五下午三點，負責保管的李老師打開展示台，卻發現獎盃<strong>不翼而飛</strong>！玻璃門沒有破損，但鎖頭被人打開了——有人拿過鑰匙。
+  </div>
+
+  <div class="section-label">🗺 現場狀況</div>
+  <div class="story-box">
+    偵探社趕到現場，注意到幾件奇怪的事：<br><br>
+    ▸ 展示台地板有一小片<strong>紅色泥土</strong><br>
+    ▸ 展示台旁邊的窗台上有一條<strong>白色刮痕</strong>，方向是從室內往外<br>
+    ▸ 獎盃很重（後來量出是4公斤），<strong>一個人很難快速搬走</strong><br>
+    ▸ 鑰匙平常放在一樓辦公室的抽屜裡
+  </div>
+
+  <div class="section-label">⏰ 時間軸</div>
+  <div class="story-box">
+    ▸ <strong>下午1:30</strong> — 運動會結束，獎盃放入展示台，李老師鎖好後將鑰匙放回辦公室<br>
+    ▸ <strong>下午1:45</strong> — 監視器拍到一個戴橘色帽子的人在展示台附近徘徊<br>
+    ▸ <strong>下午2:05～2:10</strong> — 辦公室附近有人影，但無進入辦公室的正式記錄<br>
+    ▸ <strong>下午2:50</strong> — 有同學聽到展示台方向傳來輕微聲響<br>
+    ▸ <strong>下午2:55</strong> — 後門監視器拍到兩個人一前一後快步離開<br>
+    ▸ <strong>下午3:00</strong> — 李老師發現獎盃不見了
+  </div>
+
+  <div class="section-label">👀 目擊者說法</div>
+  <div class="story-box">
+    ▸ <strong>阿明同學</strong>（五年乙班）：「下午兩點多，我在走廊聞到很濃的薄荷糖味。」<br><br>
+    ▸ <strong>陳阿姨</strong>（圖書館管理員）：「下午兩點左右，有人拿著大型藍色運動袋從走廊快步走過，袋子看起來很重。」<br><br>
+    ▸ <strong>王叔叔</strong>（工友）：「兩點四十幾分，我看到兩個人從後門急著跑出去。」
+  </div>
+
+  <!-- 謎題鎖區 -->
+  <div class="section-label">🔐 隱藏線索（解謎才能查看）</div>
+
+  <div class="puzzle-lock" id="pz-redmud">
+    <div class="puzzle-header"><span class="puzzle-icon">🟤</span><span class="puzzle-title">謎題一：神秘的紅色泥土</span></div>
+    <div class="puzzle-q">學校裡只有一個地方有紅色泥土。那個地方是用來做什麼的？（請填入2個字）</div>
+    <div class="puzzle-input-row">
+      <input class="puzzle-input" placeholder="輸入答案..." onkeydown="if(event.key==='Enter')checkPuzzle('redmud',this.value)">
+      <button class="puzzle-btn" onclick="checkPuzzle('redmud',this.previousElementSibling.value)">確認</button>
+    </div>
+    <span class="puzzle-hint-btn" onclick="toggleHint('hint-redmud')">💡 需要提示？</span>
+    <div class="puzzle-hint" id="hint-redmud">想想體育課在哪裡上？有一種場地特別是紅色的土。</div>
+    <div class="puzzle-result" id="pr-redmud"></div>
+    <div class="unlocked-content" id="uc-redmud">
+      <span class="unlocked-badge">✓ 線索解鎖</span><br>
+      科學老師化驗後確認，展示台地板的泥土與學校<strong>北側紅土操場</strong>的成分完全一致。也就是說，拿走獎盃的人，在案發前後曾去過或踩過紅土操場！
+    </div>
+  </div>
+
+  <div class="puzzle-lock" id="pz-scratch">
+    <div class="puzzle-header"><span class="puzzle-icon">🔎</span><span class="puzzle-title">謎題二：窗台上的刮痕</span></div>
+    <div class="puzzle-q">刮痕寬度是6.2公分，獎盃底座是6.0公分。刮痕的方向是從室內往室外。這條線索告訴我們什麼？（請填入「獎盃是從哪裡搬出去的」，4個字）</div>
+    <div class="puzzle-input-row">
+      <input class="puzzle-input" placeholder="輸入答案..." onkeydown="if(event.key==='Enter')checkPuzzle('scratch',this.value)">
+      <button class="puzzle-btn" onclick="checkPuzzle('scratch',this.previousElementSibling.value)">確認</button>
+    </div>
+    <span class="puzzle-hint-btn" onclick="toggleHint('hint-scratch')">💡 需要提示？</span>
+    <div class="puzzle-hint" id="hint-scratch">不是從大門，不是從後門，而是從牆上的那個開口……</div>
+    <div class="puzzle-result" id="pr-scratch"></div>
+    <div class="unlocked-content" id="uc-scratch">
+      <span class="unlocked-badge">✓ 線索解鎖</span><br>
+      刮痕和獎盃底座寬度吻合，方向朝外，幾乎可以確定<strong>獎盃是從窗戶搬出去的</strong>，而不是走正門。這樣更不容易被人看到！
+    </div>
+  </div>
+
+  <div class="puzzle-lock" id="pz-weight">
+    <div class="puzzle-header"><span class="puzzle-icon">🏋️</span><span class="puzzle-title">謎題三：太重了！</span></div>
+    <div class="puzzle-q">獎盃重4公斤，還要爬過窗台搬出去。一個小學生一個人很難做到這件事。所以這個案件至少需要幾個人合作？（請填入數字）</div>
+    <div class="puzzle-input-row">
+      <input class="puzzle-input" placeholder="輸入數字..." onkeydown="if(event.key==='Enter')checkPuzzle('weight',this.value)">
+      <button class="puzzle-btn" onclick="checkPuzzle('weight',this.previousElementSibling.value)">確認</button>
+    </div>
+    <div class="puzzle-result" id="pr-weight"></div>
+    <div class="unlocked-content" id="uc-weight">
+      <span class="unlocked-badge">✓ 線索解鎖</span><br>
+      沒錯！這個案件<strong>至少需要兩個人合作</strong>——一個人搬獎盃，一個人把風或從外面接。這代表我們要找的不是一個人，而是一個「團隊」！
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== SUSPECTS ===== -->
+<div class="tab-content" id="tab-suspects">
+  <div style="margin-bottom:14px;font-size:13px;color:var(--muted);background:var(--bg3);padding:10px 14px;border-radius:8px">
+    💡 仔細閱讀每位嫌疑人的資料，注意他們說法裡不合理的地方！
+  </div>
+  <div class="suspects-grid">
+    <div class="sus-card" id="sus-kai" onclick="selectSus('kai')">
+      <div class="sus-avatar">👦</div>
+      <div class="sus-name">陳大凱</div>
+      <div class="sus-role">六年甲班・12歲</div>
+      <div class="sus-desc">運動會的班級代表，親手接受頒獎。他說很想把獎盃帶回家讓爸媽看，但老師不允許。運動會後他獨自在操場待了很久，鞋底有紅泥痕跡。他的橘色帽子在當天「弄丟了」。</div>
+      <div class="sus-motive">🎯 想獨占獎盃帶回家炫耀</div>
+    </div>
+    <div class="sus-card" id="sus-ting" onclick="selectSus('ting')">
+      <div class="sus-avatar">👧</div>
+      <div class="sus-name">林小婷</div>
+      <div class="sus-role">六年乙班・12歲</div>
+      <div class="sus-desc">六年乙班班長，運動會第二名，非常不服氣。曾說「那個獎盃應該是我們班的」。她平時愛吃薄荷糖，書包裡常備一包。今天戴橘色帽子和橘色外套。她說下午在圖書館，但只有10分鐘的刷卡記錄。</div>
+      <div class="sus-motive">🎯 不服輸，想搶走冠軍獎盃</div>
+    </div>
+    <div class="sus-card" id="sus-gang" onclick="selectSus('gang')">
+      <div class="sus-avatar">👦</div>
+      <div class="sus-name">王小剛</div>
+      <div class="sus-role">六年乙班・12歲</div>
+      <div class="sus-desc">林小婷的好朋友，凡事聽她的話。負責管理班上體育用品，有一個大型藍色運動袋，今天帶來學校。他說下午在教室複習，但沒有人能作證。他的袋子底部有新的金屬壓痕。</div>
+      <div class="sus-motive">🎯 幫林小婷出氣，可能合謀</div>
+    </div>
+  </div>
+
+  <div style="margin-top:18px">
+    <div class="section-label">🔐 深入調查（解謎才能查看）</div>
+
+    <div class="puzzle-lock" id="pz-ting-lib">
+      <div class="puzzle-header"><span class="puzzle-icon">📚</span><span class="puzzle-title">謎題四：林小婷的謊言</span></div>
+      <div class="puzzle-q">林小婷說她下午在圖書館讀書「直到三點」。但圖書館的刷卡記錄顯示她只待了10分鐘（1:55進、2:05出）。她的說法有幾分鐘的時間是沒辦法解釋的？（1:55到3:00之間，扣掉待在圖書館的10分鐘）</div>
+      <div class="puzzle-input-row">
+        <input class="puzzle-input" placeholder="輸入分鐘數..." onkeydown="if(event.key==='Enter')checkPuzzle('tinglib',this.value)">
+        <button class="puzzle-btn" onclick="checkPuzzle('tinglib',this.previousElementSibling.value)">確認</button>
+      </div>
+      <span class="puzzle-hint-btn" onclick="toggleHint('hint-tinglib')">💡 需要提示？</span>
+      <div class="puzzle-hint" id="hint-tinglib">從1:55到3:00一共是幾分鐘？再減掉10分鐘。</div>
+      <div class="puzzle-result" id="pr-tinglib"></div>
+      <div class="unlocked-content" id="uc-tinglib">
+        <span class="unlocked-badge">✓ 線索解鎖</span><br>
+        從1:55到3:00是65分鐘，扣掉待在圖書館的10分鐘，林小婷有<strong>55分鐘的行蹤完全無法解釋</strong>！而案發時間剛好就在這段時間內。她的不在場證明根本站不住腳。
+      </div>
+    </div>
+
+    <div class="puzzle-lock" id="pz-gang-bag">
+      <div class="puzzle-header"><span class="puzzle-icon">🎒</span><span class="puzzle-title">謎題五：奇怪的袋子</span></div>
+      <div class="puzzle-q">王小剛說他的藍色運動袋是空的，但袋子底部有新的金屬壓痕，尺寸和獎盃底座吻合。如果袋子真的是空的，那個壓痕是怎麼來的？（請填入「袋子裡面裝了什麼」，3個字）</div>
+      <div class="puzzle-input-row">
+        <input class="puzzle-input" placeholder="輸入答案..." onkeydown="if(event.key==='Enter')checkPuzzle('gangbag',this.value)">
+        <button class="puzzle-btn" onclick="checkPuzzle('gangbag',this.previousElementSibling.value)">確認</button>
+      </div>
+      <span class="puzzle-hint-btn" onclick="toggleHint('hint-gangbag')">💡 需要提示？</span>
+      <div class="puzzle-hint" id="hint-gangbag">整個案件在找什麼？那個重要的東西是什麼？</div>
+      <div class="puzzle-result" id="pr-gangbag"></div>
+      <div class="unlocked-content" id="uc-gangbag">
+        <span class="unlocked-badge">✓ 線索解鎖</span><br>
+        王小剛說袋子是空的，但那個新的金屬壓痕說明袋子裡<strong>裝過獎盃</strong>！壓痕的尺寸和獎盃底座完全吻合，而且痕跡很新，就是今天留下的。這是一個很重要的物證！
+      </div>
+    </div>
+
+    <div class="puzzle-lock" id="pz-kai-alibi">
+      <div class="puzzle-header"><span class="puzzle-icon">👟</span><span class="puzzle-title">謎題六：陳大凱洗冤了嗎？</span></div>
+      <div class="puzzle-q">陳大凱的鞋底有紅泥，但紅泥只沾在鞋尖和鞋側，不是整個鞋底都有。正常在操場跑步的話，紅泥應該沾在哪裡？（請填入「鞋底的哪個部分」，3個字）</div>
+      <div class="puzzle-input-row">
+        <input class="puzzle-input" placeholder="輸入答案..." onkeydown="if(event.key==='Enter')checkPuzzle('kaialibi',this.value)">
+        <button class="puzzle-btn" onclick="checkPuzzle('kaialibi',this.previousElementSibling.value)">確認</button>
+      </div>
+      <span class="puzzle-hint-btn" onclick="toggleHint('hint-kaialibi')">💡 需要提示？</span>
+      <div class="puzzle-hint" id="hint-kaialibi">跑步的時候，腳的哪個部分最用力踩地？前面、中間、還是整個？</div>
+      <div class="puzzle-result" id="pr-kaialibi"></div>
+      <div class="unlocked-content" id="uc-kaialibi">
+        <span class="unlocked-badge">✓ 線索解鎖</span><br>
+        跑步時紅泥應該沾在<strong>整個鞋底</strong>，但陳大凱只有鞋尖和鞋側有泥，更像是不小心踢到或路過時蹭到的。加上多名同學可以作證他下午一直在教室整理道具，<strong>他的嫌疑大幅降低！</strong>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== EVIDENCE ===== -->
+<div class="tab-content" id="tab-evidence">
+  <div style="margin-bottom:14px;font-size:13px;color:var(--muted);background:var(--bg3);padding:10px 14px;border-radius:8px">
+    💡 灰色物證需要先在「調查」頁面找到對應線索才能解鎖。
+  </div>
+  <div class="ev-grid">
+    <div class="ev-card" onclick="openEv('mud_sample')">
+      <div class="ev-icon2">🟤</div>
+      <div class="ev-title">紅色泥土樣本</div>
+      <div class="ev-desc2">展示台地板的泥土，與北側紅土操場完全吻合</div>
+    </div>
+    <div class="ev-card" onclick="openEv('scratch_mark')">
+      <div class="ev-icon2">🔎</div>
+      <div class="ev-title">窗台刮痕分析</div>
+      <div class="ev-desc2">寬6.2公分，與獎盃底座6.0公分相符，方向朝外</div>
+    </div>
+    <div class="ev-card locked" id="ev-cam-photo" onclick="openEv('cam_photo')">
+      <div class="ev-icon2">📹</div>
+      <div class="ev-title">監視器截圖</div>
+      <div class="ev-desc2">???</div>
+      <div class="lock-hint">🔒 在「調查」頁面輸入正確關鍵字解鎖</div>
+    </div>
+    <div class="ev-card locked" id="ev-bag-check" onclick="openEv('bag_check')">
+      <div class="ev-icon2">🎒</div>
+      <div class="ev-title">藍色運動袋鑑定</div>
+      <div class="ev-desc2">???</div>
+      <div class="lock-hint">🔒 在「調查」頁面輸入正確關鍵字解鎖</div>
+    </div>
+    <div class="ev-card locked" id="ev-mint-candy" onclick="openEv('mint_candy')">
+      <div class="ev-icon2">🍬</div>
+      <div class="ev-title">薄荷糖包裝紙</div>
+      <div class="ev-desc2">???</div>
+      <div class="lock-hint">🔒 在「調查」頁面輸入正確關鍵字解鎖</div>
+    </div>
+    <div class="ev-card locked" id="ev-library-record" onclick="openEv('library_record')">
+      <div class="ev-icon2">📚</div>
+      <div class="ev-title">圖書館進出記錄</div>
+      <div class="ev-desc2">???</div>
+      <div class="lock-hint">🔒 在「調查」頁面輸入正確關鍵字解鎖</div>
+    </div>
+    <div class="ev-card locked" id="ev-key-record" onclick="openEv('key_record')">
+      <div class="ev-icon2">🔑</div>
+      <div class="ev-title">鑰匙取用記錄</div>
+      <div class="ev-desc2">???</div>
+      <div class="lock-hint">🔒 在「調查」頁面輸入正確關鍵字解鎖</div>
+    </div>
+    <div class="ev-card locked" id="ev-back-cam" onclick="openEv('back_cam')">
+      <div class="ev-icon2">🚪</div>
+      <div class="ev-title">後門監視器畫面</div>
+      <div class="ev-desc2">???</div>
+      <div class="lock-hint">🔒 在「調查」頁面輸入正確關鍵字解鎖</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SEARCH ===== -->
+<div class="tab-content" id="tab-search">
+  <div class="search-hint">
+    🕵️ <strong>自由輸入你想調查的關鍵字！</strong><br>
+    沒有提示，沒有快捷鍵。根據案件故事和嫌疑人資料，自己想想看哪些東西值得深入調查。輸入愈精準，線索愈多！
+  </div>
+  <div class="section-label">🔎 關鍵字搜查</div>
+  <div class="search-row">
+    <input class="search-input" id="search-input" placeholder="輸入你想調查的關鍵字..." onkeydown="if(event.key==='Enter')doSearch()">
+    <button class="btn" onclick="doSearch()">調查</button>
+  </div>
+  <div style="font-size:12px;color:var(--muted);margin-bottom:8px">已嘗試過的關鍵字：</div>
+  <div class="tried-words" id="tried-words"></div>
+  <div class="section-label">📓 偵探筆記</div>
+  <div class="notebook-wrap" id="notebook">
+    <div class="nb-entry">▸ 開始調查「消失的冠軍獎盃」！自己想關鍵字來調查吧。</div>
+  </div>
+</div>
+
+<!-- ===== VERDICT ===== -->
+<div class="tab-content" id="tab-verdict">
+  <div class="verdict-intro">
+    ⚖️ 請根據你找到的所有線索，完成這份偵探裁決報告。<br>
+    每個問題都要回答，而且第5題需要你<strong>用自己的話</strong>說明推理過程！
+  </div>
+
+  <div class="verdict-step">
+    <div class="vs-title"><div class="vs-num">1</div>你認為是誰拿走了獎盃？</div>
+    <div class="radio-group">
+      <label class="radio-item" onclick="choose(this,'suspect','kai')"><input type="radio" name="suspect"> <span class="radio-label">👦 <strong>陳大凱</strong> — 他想把獎盃帶回家，鞋底有紅泥</span></label>
+      <label class="radio-item" onclick="choose(this,'suspect','ting')"><input type="radio" name="suspect"> <span class="radio-label">👧 <strong>林小婷</strong> — 她輸了不服氣，且出現在展示台附近</span></label>
+      <label class="radio-item" onclick="choose(this,'suspect','both')"><input type="radio" name="suspect"> <span class="radio-label">👧👦 <strong>林小婷 + 王小剛 合謀</strong> — 兩人一起合作搬走獎盃</span></label>
+    </div>
+  </div>
+
+  <div class="verdict-step">
+    <div class="vs-title"><div class="vs-num">2</div>選出你認為最有力的3項物證</div>
+    <div class="ev-check-grid">
+      <label class="ev-check-item" onclick="toggleEv(this,'hat')"><input type="checkbox"> <span class="ev-check-label">🧢 橘色帽子與林小婷吻合</span></label>
+      <label class="ev-check-item" onclick="toggleEv(this,'mint')"><input type="checkbox"> <span class="ev-check-label">🍬 展示台附近的薄荷糖包裝紙</span></label>
+      <label class="ev-check-item" onclick="toggleEv(this,'bag')"><input type="checkbox"> <span class="ev-check-label">🎒 運動袋底部的獎盃壓痕</span></label>
+      <label class="ev-check-item" onclick="toggleEv(this,'lib')"><input type="checkbox"> <span class="ev-check-label">📚 林小婷圖書館謊言（55分鐘空白）</span></label>
+      <label class="ev-check-item" onclick="toggleEv(this,'two')"><input type="checkbox"> <span class="ev-check-label">👥 兩人從後門跑走的目擊</span></label>
+      <label class="ev-check-item" onclick="toggleEv(this,'key')"><input type="checkbox"> <span class="ev-check-label">🔑 辦公室鑰匙被人趁機取走</span></label>
+      <label class="ev-check-item" onclick="toggleEv(this,'mud')"><input type="checkbox"> <span class="ev-check-label">🟤 操場紅泥出現在展示台附近</span></label>
+      <label class="ev-check-item" onclick="toggleEv(this,'cam')"><input type="checkbox"> <span class="ev-check-label">📹 後門監視器拍到橘帽+藍袋</span></label>
+    </div>
+    <div id="ev-count" style="font-size:12px;color:var(--muted);margin-top:8px">已選 0 / 3 項</div>
+  </div>
+
+  <div class="verdict-step">
+    <div class="vs-title"><div class="vs-num">3</div>他們是怎麼拿到展示台鑰匙的？</div>
+    <div class="radio-group">
+      <label class="radio-item" onclick="choose(this,'key_how','steal')"><input type="radio" name="key_how"> <span class="radio-label">趁辦公室值班老師不注意，偷偷進去把鑰匙拿走</span></label>
+      <label class="radio-item" onclick="choose(this,'key_how','copy')"><input type="radio" name="key_how"> <span class="radio-label">事先複製好一把備用鑰匙</span></label>
+      <label class="radio-item" onclick="choose(this,'key_how','broke')"><input type="radio" name="key_how"> <span class="radio-label">用工具把鎖頭強行撬開</span></label>
+    </div>
+  </div>
+
+  <div class="verdict-step">
+    <div class="vs-title"><div class="vs-num">4</div>獎盃最可能被藏在哪裡？</div>
+    <div class="radio-group">
+      <label class="radio-item" onclick="choose(this,'location','home')"><input type="radio" name="location"> <span class="radio-label">帶出校園藏回家</span></label>
+      <label class="radio-item" onclick="choose(this,'location','storage')"><input type="radio" name="location"> <span class="radio-label">藏在學校的體育器材室或儲藏室裡</span></label>
+      <label class="radio-item" onclick="choose(this,'location','park')"><input type="radio" name="location"> <span class="radio-label">藏在學校附近的公園草叢</span></label>
+    </div>
+  </div>
+
+  <div class="verdict-step">
+    <div class="vs-title"><div class="vs-num">5</div>用你自己的話說明推理過程 <span style="font-size:12px;color:var(--muted);font-weight:400">（至少寫30個字）</span></div>
+    <textarea class="free-write" id="reasoning" placeholder="例如：我認為是___，因為___，加上___的物證可以證明……"></textarea>
+    <div id="reasoning-count" style="font-size:11px;color:var(--muted);margin-top:4px">目前：0 字</div>
+  </div>
+
+  <div class="verdict-warn" id="verdict-warn">⚠️ 請完成所有問題、選滿3項物證，並寫下至少30字的推理說明！</div>
+  <button class="submit-btn" onclick="submitVerdict()">📋 提交裁決報告</button>
+
+  <div class="result-panel" id="result-panel">
+    <div class="result-icon" id="res-icon"></div>
+    <div class="result-title" id="res-title"></div>
+    <div class="result-score" id="res-score"></div>
+    <div class="result-body" id="res-body"></div>
+    <button class="btn btn-gray" onclick="resetGame()" style="width:100%;margin-top:4px">🔄 重新調查</button>
+  </div>
+</div>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-icon" id="modal-icon"></div>
+    <div class="modal-title" id="modal-title"></div>
+    <div class="modal-body" id="modal-body"></div>
+    <button class="modal-btn" onclick="closeModal()">✓ 收下這項線索</button>
+  </div>
+</div>
+
+<script>
+// ── 狀態 ──
+const unlockedClues = new Set();
+const evUnlocked = {cam_photo:false,bag_check:false,mint_candy:false,library_record:false,key_record:false,back_cam:false};
+const triedWords = {};
+const answers = {};
+let selectedEv = new Set();
+
+// ── 謎題答案 ──
+const PUZZLES = {
+  redmud:  {answers:['操場','紅土操場','跑步'],clue:'pz_redmud'},
+  scratch: {answers:['窗戶','從窗戶'],clue:'pz_scratch'},
+  weight:  {answers:['2','兩','兩個'],clue:'pz_weight'},
+  tinglib: {answers:['55','55分鐘'],clue:'pz_tinglib'},
+  gangbag: {answers:['獎盃','冠軍獎盃'],clue:'pz_gangbag'},
+  kaialibi:{answers:['整個鞋底','整個','全部','鞋底'],clue:'pz_kaialibi'},
+};
+
+// ── 搜查資料庫 ──
+const SEARCH_DB = {
+  '薄荷糖':   {text:'在展示台附近的角落找到一片<strong>薄荷糖包裝紙</strong>！比對後確認品牌和口味與林小婷書包裡的薄荷糖完全相同。案發時間剛好有人聞到薄荷糖味，說明林小婷曾在現場附近出現。',clue:'search_mint',unlock:'mint_candy'},
+  '圖書館':   {text:'圖書館刷卡記錄：林小婷在下午<strong>1:55進入、2:05離開</strong>，只待了10分鐘。她聲稱「待到三點」是謊話——她有55分鐘的行蹤完全無法解釋。',clue:'search_lib',unlock:'library_record'},
+  '鑰匙':     {text:'辦公室值班老師回想，下午兩點左右有一名<strong>女生</strong>進辦公室「問問題」，站的位置剛好能看到放鑰匙的抽屜。展示台鑰匙孔旁還有新的細微刮痕，顯示有人急著插入鑰匙。',clue:'search_key',unlock:'key_record'},
+  '橘色帽子': {text:'監視器截圖清楚顯示，那頂橘色帽子上有<strong>白色貼片圖案</strong>，和林小婷今天戴的帽子完全一樣！她說自己沒有靠近過展示台，這個截圖直接戳破了她的謊言。',clue:'search_cam',unlock:'cam_photo'},
+  '後門':     {text:'後門監視器在<strong>下午2:55</strong>拍到兩個人——一個戴橘色帽子，一個拿著大型藍色袋子，兩人一前一後快步離開。這和工友王叔叔的目擊完全吻合！',clue:'search_back',unlock:'back_cam'},
+  '運動袋':   {text:'王小剛的藍色運動袋底部有新的<strong>金屬刮痕和凹陷</strong>，尺寸和獎盃底座高度吻合。他說袋子是空的，但這個痕跡說明今天袋子裡裝過很重的金屬物品。',clue:'search_bag',unlock:'bag_check'},
+  '林小婷':   {text:'整合林小婷的行蹤：1:55進圖書館→2:05離開→2:10在辦公室附近（目擊）→2:45出現在展示台附近→2:55從後門離開。<strong>她的行蹤完整對上案發時間軸。</strong>',clue:'search_ting'},
+  '王小剛':   {text:'王小剛說自己在教室複習，但沒有人見過他。體育老師說他下午兩點半來器材室「借」自己的私人袋子——<strong>為什麼要借自己的袋子？他在刻意掩飾行蹤。</strong>',clue:'search_gang'},
+  '陳大凱':   {text:'六年甲班三位同學都證實，陳大凱下午1:30到3:00幾乎一直在教室整理道具，只短暫離開5分鐘去廁所。<strong>5分鐘根本不夠搬走獎盃，他的嫌疑大幅降低。</strong>',clue:'search_kai'},
+  '器材室':   {text:'學校體育器材室位在操場旁邊，下午通常沒有人管理。偵探社在器材室外面的地上，找到一個<strong>藍色背包的拉鍊扣</strong>，和王小剛運動袋上缺少的那個扣子形狀一模一樣！',clue:'search_storage'},
+};
+
+const EV_DATA = {
+  mud_sample:    {icon:'🟤',title:'紅色泥土樣本',body:'<p>科學老師化驗確認，展示台地板的泥土與<strong>北側紅土操場</strong>完全一致。拿走獎盃的人在案發前後去過紅土操場或其附近。</p>'},
+  scratch_mark:  {icon:'🔎',title:'窗台刮痕',body:'<p>刮痕寬6.2公分，獎盃底座寬6.0公分，幾乎完全吻合。方向從室內往室外，代表<strong>獎盃是從窗戶搬出去的</strong>，而不是走正門。</p>'},
+  cam_photo:     {icon:'📹',title:'監視器截圖',body:'<p>截圖顯示下午1:45在展示台附近的人，戴著有<strong>白色貼片圖案的橘色帽子</strong>，與林小婷今天的帽子完全相同，確認她曾提前「探查地形」。</p>'},
+  bag_check:     {icon:'🎒',title:'藍色運動袋鑑定',body:'<p>袋子底部有新的<strong>金屬刮痕和凹陷</strong>，尺寸與獎盃底座吻合，科學老師確認是今天留下的。王小剛說袋子是空的——顯然是說謊。</p>'},
+  mint_candy:    {icon:'🍬',title:'薄荷糖包裝紙',body:'<p>在展示台附近角落找到的包裝紙，品牌口味與林小婷書包裡的薄荷糖<strong>完全相同</strong>。阿明同學在案發時間聞到薄荷糖味，說明她曾在現場。</p>'},
+  library_record:{icon:'📚',title:'圖書館進出記錄',body:'<p>刷卡紀錄：進1:55，出2:05，僅待<strong>10分鐘</strong>。林小婷聲稱「待到三點」是謊言——她有長達55分鐘的行蹤空白，涵蓋整個案發時段。</p>'},
+  key_record:    {icon:'🔑',title:'鑰匙取用記錄',body:'<p>值班老師說下午兩點有名女生進辦公室，站的位置<strong>剛好看到鑰匙抽屜</strong>。展示台鑰匙孔旁有新的刮痕，顯示有人急著插入鑰匙——是臨時取得的，不是複製鑰匙。</p>'},
+  back_cam:      {icon:'🚪',title:'後門監視器',body:'<p>下午2:55，後門監視器拍到<strong>一個戴橘色帽子的人和一個拿大藍袋的人</strong>，一前一後快步離開，和工友王叔叔的目擊完全吻合。兩人是一起行動的！</p>'},
+};
+
+// ── 謎題 ──
+function checkPuzzle(id, val) {
+  val = val.trim();
+  const p = PUZZLES[id];
+  const resEl = document.getElementById('pr-'+id);
+  const lockEl = document.getElementById('pz-'+id);
+  const correct = p.answers.some(a => val === a);
+  if (!val) return;
+  if (correct) {
+    resEl.className = 'puzzle-result correct';
+    resEl.textContent = '✓ 正確！線索解鎖了！';
+    setTimeout(() => {
+      lockEl.classList.add('unlocked');
+      unlockClue(p.clue);
+    }, 600);
+  } else {
+    resEl.className = 'puzzle-result wrong';
+    resEl.textContent = '✗ 答案不對，再想想看！';
+  }
+}
+
+function toggleHint(id) {
+  const el = document.getElementById(id);
+  el.style.display = el.style.display === 'block' ? 'none' : 'block';
+}
+
+// ── 搜查 ──
+function doSearch() {
+  const input = document.getElementById('search-input');
+  const val = input.value.trim();
+  input.value = '';
+  if (!val) return;
+
+  // 模糊比對
+  const key = Object.keys(SEARCH_DB).find(k => val.includes(k) || k.includes(val));
+  const hit = key ? SEARCH_DB[key] : null;
+
+  // 加到已嘗試區
+  if (!triedWords[val]) {
+    triedWords[val] = !!hit;
+    const chip = document.createElement('span');
+    chip.className = 'tried-word ' + (hit ? 'hit' : 'miss');
+    chip.textContent = val;
+    document.getElementById('tried-words').appendChild(chip);
+  }
+
+  if (hit) {
+    if (!unlockedClues.has(hit.clue)) {
+      unlockClue(hit.clue);
+      addNote('🔍 調查「' + val + '」→ ' + hit.text, 'new');
+      if (hit.unlock) unlockEv(hit.unlock);
+    } else {
+      addNote('📌「' + val + '」已調查過了。', '');
+    }
+  } else {
+    addNote('❓ 搜查「' + val + '」— 沒有找到相關線索，換個關鍵字試試！', 'miss');
+  }
+}
+
+function unlockClue(id) {
+  if (unlockedClues.has(id)) return;
+  unlockedClues.add(id);
+  updateProgress();
+}
+
+function unlockEv(id) {
+  if (evUnlocked[id]) return;
+  evUnlocked[id] = true;
+  const elId = 'ev-' + id.replace(/_/g, '-');
+  const el = document.getElementById(elId);
+  if (!el) return;
+  el.classList.remove('locked');
+  el.classList.add('just-unlocked');
+  el.querySelector('.ev-desc2').textContent = '點擊查看詳細內容';
+  el.querySelector('.lock-hint')?.remove();
+  setTimeout(() => el.classList.remove('just-unlocked'), 3000);
+}
+
+function updateProgress() {
+  const n = unlockedClues.size, total = 10;
+  document.getElementById('prog-count').textContent = n + ' / ' + total + ' 線索解鎖';
+  document.getElementById('prog-fill').style.width = Math.min(100, n / total * 100) + '%';
+  const chips = document.getElementById('clue-chips');
+  chips.innerHTML = '';
+  unlockedClues.forEach(id => {
+    const labels = {
+      pz_redmud:'操場紅泥', pz_scratch:'窗台刮痕', pz_weight:'需兩人合作',
+      pz_tinglib:'林小婷55分空白', pz_gangbag:'袋子裝過獎盃', pz_kaialibi:'陳大凱不在場',
+      search_mint:'薄荷糖包裝紙', search_lib:'圖書館謊言', search_key:'鑰匙被偷取',
+      search_cam:'橘帽比對', search_back:'後門影像', search_bag:'藍袋壓痕',
+      search_ting:'林小婷行蹤', search_gang:'王小剛行蹤', search_kai:'陳大凱不在場',
+      search_storage:'器材室拉鍊扣',
+    };
+    const c = document.createElement('span');
+    c.className = 'chip';
+    c.textContent = '✓ ' + (labels[id] || id);
+    chips.appendChild(c);
+  });
+}
+
+function addNote(text, cls) {
+  const nb = document.getElementById('notebook');
+  const e = document.createElement('div');
+  e.className = 'nb-entry' + (cls ? ' ' + cls : '');
+  e.innerHTML = text;
+  nb.appendChild(e);
+  setTimeout(() => e.classList.remove('new'), 3000);
+  nb.scrollTop = nb.scrollHeight;
+}
+
+// ── 物證 ──
+function openEv(id) {
+  const locked = ['cam_photo','bag_check','mint_candy','library_record','key_record','back_cam'];
+  if (locked.includes(id) && !evUnlocked[id]) return;
+  const d = EV_DATA[id]; if (!d) return;
+  document.getElementById('modal-icon').textContent = d.icon;
+  document.getElementById('modal-title').textContent = d.title;
+  document.getElementById('modal-body').innerHTML = d.body;
+  document.getElementById('modal').classList.add('show');
+}
+
+// ── 嫌疑人 ──
+function selectSus(id) {
+  document.querySelectorAll('.sus-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('sus-' + id).classList.add('selected');
+}
+
+// ── 裁決 ──
+function choose(el, name, val) {
+  el.closest('.radio-group').querySelectorAll('.radio-item').forEach(r => r.classList.remove('chosen'));
+  el.classList.add('chosen');
+  answers[name] = val;
+}
+
+function toggleEv(el, val) {
+  const cb = el.querySelector('input');
+  if (!cb.checked) {
+    if (selectedEv.size >= 3) { cb.checked = false; el.classList.remove('checked'); return; }
+    selectedEv.add(val); el.classList.add('checked');
+  } else {
+    selectedEv.delete(val); el.classList.remove('checked');
+  }
+  document.getElementById('ev-count').textContent = '已選 ' + selectedEv.size + ' / 3 項';
+}
+
+// 推理字數
+document.addEventListener('input', e => {
+  if (e.target.id === 'reasoning') {
+    const len = e.target.value.trim().length;
+    document.getElementById('reasoning-count').textContent = '目前：' + len + ' 字';
+  }
+});
+
+function submitVerdict() {
+  const reasoning = document.getElementById('reasoning').value.trim();
+  const warn = document.getElementById('verdict-warn');
+  if (!answers.suspect || selectedEv.size < 3 || !answers.key_how || !answers.location || reasoning.length < 30) {
+    warn.style.display = 'block'; return;
+  }
+  warn.style.display = 'none';
+
+  const good = ['hat','mint','bag','lib','two','key','cam'];
+  const goodPicked = [...selectedEv].filter(e => good.includes(e)).length;
+  let score = 0;
+  if (answers.suspect === 'both') score += 40;
+  else if (answers.suspect === 'ting') score += 15;
+  if (answers.key_how === 'steal') score += 20;
+  if (answers.location === 'storage') score += 15;
+  score += goodPicked * 6;
+  if (reasoning.length >= 80) score += 10;
+  else if (reasoning.length >= 50) score += 5;
+  score = Math.min(score, 100);
+
+  const panel = document.getElementById('result-panel');
+  panel.classList.add('show');
+  document.getElementById('res-icon').textContent = score >= 80 ? '🏆' : score >= 55 ? '🔎' : '😅';
+  document.getElementById('res-score').textContent = '偵探評分：' + score + ' / 100 分';
+
+  if (score >= 80) {
+    document.getElementById('res-title').textContent = '太厲害了！案件告破！';
+    document.getElementById('res-title').className = 'result-title correct';
+    document.getElementById('res-body').innerHTML = '<p>✅ <strong>完全正確！</strong>兇手是 <strong>林小婷 + 王小剛</strong> 合謀。</p><p>🔍 <strong>完整真相：</strong>林小婷因為輸了運動會非常不甘心，說服好友王小剛一起行動。她先去圖書館打卡，製造假的不在場證明，再趁辦公室老師不注意，偷走展示台鑰匙。王小剛帶著藍色運動袋配合，林小婷把風，王小剛把獎盃裝進袋子裡從窗戶搬出，兩人從後門離開，把獎盃藏進學校體育器材室角落。</p><p>😔 <strong>結局：</strong>兩人向全班同學道歉並接受學校處分。林小婷說：「輸贏不代表一切，下次我要用正當的方式贏回來！」</p>';
+  } else if (score >= 55) {
+    document.getElementById('res-title').textContent = '方向正確，但還不夠完整！';
+    document.getElementById('res-title').className = 'result-title correct';
+    document.getElementById('res-body').innerHTML = '<p>👍 你找到了部分真相，但還有一些重要線索沒發現。回到「調查」頁面，試著輸入更多你覺得值得調查的關鍵字，特別是嫌疑人的名字和關鍵物品！</p>';
+  } else {
+    document.getElementById('res-title').textContent = '線索還不夠，繼續調查！';
+    document.getElementById('res-title').className = 'result-title wrong';
+    document.getElementById('res-body').innerHTML = '<p>🔎 目前找到的線索還不足以支撐你的裁決。先回到「案件故事」仔細閱讀，再試著解開更多謎題，然後在「調查」頁面輸入你覺得有疑點的關鍵字！</p>';
+  }
+  panel.scrollIntoView({ behavior: 'smooth' });
+}
+
+// ── 切換分頁 ──
+function switchTab(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  const tabs = ['story','suspects','evidence','search','verdict'];
+  document.querySelectorAll('.tab')[tabs.indexOf(id)].classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
+}
+
+// ── 關閉 Modal ──
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modal')) document.getElementById('modal').classList.remove('show');
+}
+
+// ── 重設 ──
+function resetGame() {
+  unlockedClues.clear(); selectedEv.clear();
+  Object.keys(evUnlocked).forEach(k => evUnlocked[k] = false);
+  Object.keys(answers).forEach(k => delete answers[k]);
+  document.getElementById('prog-fill').style.width = '0%';
+  document.getElementById('prog-count').textContent = '0 / 10 線索解鎖';
+  document.getElementById('clue-chips').innerHTML = '';
+  document.getElementById('notebook').innerHTML = '<div class="nb-entry">▸ 重新開始調查！</div>';
+  document.getElementById('tried-words').innerHTML = '';
+  Object.keys(triedWords).forEach(k => delete triedWords[k]);
+  document.querySelectorAll('.puzzle-lock').forEach(el => {
+    el.classList.remove('unlocked');
+    el.querySelector('.puzzle-result').className = 'puzzle-result';
+    el.querySelector('.puzzle-result').textContent = '';
+    el.querySelector('.puzzle-input')?.value !== undefined && (el.querySelector('.puzzle-input').value = '');
+  });
+  document.querySelectorAll('.sus-card').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.radio-item').forEach(r => { r.classList.remove('chosen'); r.querySelector('input').checked = false; });
+  document.querySelectorAll('.ev-check-item').forEach(r => { r.classList.remove('checked'); r.querySelector('input').checked = false; });
+  document.getElementById('ev-count').textContent = '已選 0 / 3 項';
+  document.getElementById('reasoning').value = '';
+  document.getElementById('reasoning-count').textContent = '目前：0 字';
+  document.getElementById('verdict-warn').style.display = 'none';
+  document.getElementById('result-panel').classList.remove('show');
+  const evIds = ['cam-photo','bag-check','mint-candy','library-record','key-record','back-cam'];
+  const lockTexts = {'cam-photo':'在「調查」頁面輸入正確關鍵字解鎖','bag-check':'在「調查」頁面輸入正確關鍵字解鎖','mint-candy':'在「調查」頁面輸入正確關鍵字解鎖','library-record':'在「調查」頁面輸入正確關鍵字解鎖','key-record':'在「調查」頁面輸入正確關鍵字解鎖','back-cam':'在「調查」頁面輸入正確關鍵字解鎖'};
+  evIds.forEach(id => {
+    const el = document.getElementById('ev-' + id);
+    if (!el) return;
+    el.classList.add('locked');
+    el.querySelector('.ev-desc2').textContent = '???';
+    if (!el.querySelector('.lock-hint')) {
+      const h = document.createElement('div'); h.className = 'lock-hint';
+      h.textContent = '🔒 ' + lockTexts[id]; el.appendChild(h);
+    }
+  });
+  switchTab('story');
+}
+</script>
+</body>
+</html>
